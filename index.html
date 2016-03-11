@@ -41,6 +41,10 @@
 <body>
 <div id="input-frame" class="well">
 	<input type="text">
+	<button class="lookAtPerspective">Perspective</button>
+	<button class="lookAtFront">Front View</button>
+	<button class="lookAtRight">Right View</button>
+	<button class="lookAtTop">Top View</button>
 </div>
 
 <div id="Stats-output">
@@ -54,6 +58,38 @@
 
     // once everything is loaded, we run our Three.js stuff.
     $(function () {
+
+    	//Initializing required vars:
+    	var len = 150, // Length of beem with accelerometer
+			scale = 20,
+
+			step = 0, //time step
+        	time = 0, //Initial time
+
+        	cubeXDim = 10,
+        	cubeYDim = 7,
+        	cubeZDim = 3;
+
+        /*var Ax1 = 2.72; var fiX1 = -138.6;
+        var Ay1 = 3.15; var fiY1 = 15.4;
+        var Az1 = 14.78; var fiZ1 = 44.1;
+
+        var Ax2 = 15.52; var fiX2 = 12.8;
+        var Ay2 = 4.86; var fiY2 = -165.3;
+        var Az2 = 146.02; var fiZ2 = 5.4;*/
+
+        var Ax1 = 2.29; var fiX1 = -97.5;
+        var Ay1 = 19.61; var fiY1 = 8.0;
+        var Az1 = 100.19; var fiZ1 = -0.4;
+
+        var Ax2 = 10.31; var fiX2 = 8.0;
+        var Ay2 = 15.55; var fiY2 = -178.9;
+        var Az2 = 42.45; var fiZ2 = 7.6;
+
+        var x1, y1, z1, x2, y2, z2;
+        var xPos, yPos, zPos, xRot, yRot, zRot;
+        
+        var omega = 100;
 
         var stats = initStats();
 
@@ -80,15 +116,15 @@
         // rotate and position the plane
         plane.rotation.x=-0.5*Math.PI;
         plane.position.x = 15;
-        plane.position.y = -6;
+        plane.position.y = -10;
         plane.position.z = 0;
 
         // add the plane to the scene
         scene.add(plane);
 
         // create a cube
-        var cubeGeometry = new THREE.CubeGeometry(10,7,3);
-        var cubeMaterial = new THREE.MeshLambertMaterial({color: 'green'});
+        var cubeGeometry = new THREE.CubeGeometry(cubeXDim,cubeYDim,cubeZDim);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red'});
         var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
         cube.castShadow = true;
 
@@ -107,8 +143,10 @@
 		var lineGeometry = new THREE.Geometry();
 
 		lineGeometry.vertices.push(
-			new THREE.Vector3( 0, 0, -10 ),
-			new THREE.Vector3( 0, 0, 10 )
+			//                 x  y   z 
+			new THREE.Vector3( 0, 0, len/scale ),
+			new THREE.Vector3( 0, 0, 0 ),
+			new THREE.Vector3( 0, 0, -len/scale )
 		);
 
 		var line = new THREE.Line( lineGeometry, lineMaterial );
@@ -117,7 +155,7 @@
 
         // position and point the camera to the center of the scene
         camera.position.x = -30;
-        camera.position.y = 40;
+        camera.position.y = 30;
         camera.position.z = 30;
         camera.lookAt(scene.position);
 
@@ -135,25 +173,6 @@
         $("#WebGL-output").append(renderer.domElement);
 
         // call the render function
-        var step = 0;
-        var time = 0; //Initial time
-
-        var Ax1 = 2.72; var fiX1 = -138.6;
-        var Ay1 = 3.15; var fiY1 = 15.4;
-        var Az1 = 14.78; var fiZ1 = 44.1;
-
-        var Ax2 = 15.52; var fiX2 = 12.8;
-        var Ay2 = 4.86; var fiY2 = -165.3;
-        var Az2 = 146.02; var fiZ2 = 5.4;
-
-        var x1, y1, z1, x2, y2, z2;
-        var xPos, yPos, zPos, xRot, yRot, zRot;
-        var len = 2; // Length of beem with accelerometer
-
-        var scale = 100;
-
-        var a,b,c;
-            a = 0; b = 0; c = 0;
 
         var controls = new function() {
             this.rotationSpeed = 0.02;
@@ -169,34 +188,35 @@
         function render() {
             stats.update();
 
-            x1 = Ax1 * Math.sin(100 * time + fiX1*Math.PI/180);
-            y1 = Ay1 * Math.sin(100 * time + fiY1*Math.PI/180);
-            z1 = Az1 * Math.sin(100 * time + fiZ1*Math.PI/180);
+            x1 = equation(Ax1, fiX1);
+            y1 = equation(Ay1, fiY1);
+            z1 = equation(Az1, fiZ1);
 
-            x2 = Ax2 * Math.sin(100 * time + fiX2*Math.PI/180);
-            y2 = Ay2 * Math.sin(100 * time + fiY2*Math.PI/180);
-            z2 = Az2 * Math.sin(100 * time + fiZ2*Math.PI/180);
+            x2 = equation(Ax2, fiX2);
+            y2 = equation(Ay2, fiY2);
+            z2 = equation(Az2, fiZ2);
 
             xPos = (x1-x2)/2;
             yPos = (y1-y2)/2;
             zPos = (z1+z2)/2;
 
-            xRot = Math.acos((z2-zPos)/len / scale);
+            xRot = Math.acos((z1-zPos)/len);
+            yRot = Math.acos((y1-yPos)/len);
 
             // rotate the cube around its axes
             cube.position.x = xPos / scale;
-            cube.position.y = zPos / scale;
-            cube.position.z = -yPos / scale;
+            cube.position.y = zPos / scale - cubeYDim/2*Math.cos(xRot - Math.PI/2);
+            cube.position.z = yPos / scale - cubeYDim/2*Math.sin(xRot - Math.PI/2);
 
             // rotate the cube around its axes
             cube.rotation.x = xRot + Math.PI/2;
-            /*cube.rotation.y = ;
-            cube.rotation.z =;*/
+            cube.rotation.y = yRot + Math.PI/2;
+            /*cube.rotation.z =;*/
 
-            //line.geometry.vertices[0] = new THREE.Vector3(x1/20, z1/20 + 6, -y1/20);
-            //line.geometry.vertices[1] = new THREE.Vector3(-x2/20, z2/20 + 6, -y2/20);
-            line.geometry.vertices[0] = new THREE.Vector3(x1/30 - 10, z1/30+6, y1/30);
-            line.geometry.vertices[1] = new THREE.Vector3(x2/30 + 10, z2/30+6, y2/30);
+            //                                              x            y       z
+            line.geometry.vertices[0] = new THREE.Vector3(x1/scale, z1/scale, (-y1+len)/scale);
+            line.geometry.vertices[1] = new THREE.Vector3(xPos/scale, zPos/scale, yPos/scale);
+            line.geometry.vertices[2] = new THREE.Vector3(-x2/scale, z2/scale, (y2-len)/scale);
             line.geometry.verticesNeedUpdate = true;
             line.geometry.computeFaceNormals();
 
@@ -209,6 +229,10 @@
             renderer.render(scene, camera);
 
             time += 0.001;
+
+            function equation(A, fi){
+            	return A * Math.sin(omega*time + fi*Math.PI/180);
+            }
         }
 
         function initStats() {
@@ -226,6 +250,22 @@
 
             return stats;
         }
+
+        lookAt(".lookAtPerspective", -30, 30, 30);
+        lookAt(".lookAtFront", 0, 0, 30);
+        lookAt(".lookAtRight", 30, 0, 0);
+        lookAt(".lookAtTop", 0, 30, 0);
+
+        function lookAt(button, x, y, z) {
+
+		    $(button).click(function(){
+		        camera.position.x = x;
+			    camera.position.y = y;
+			    camera.position.z = z;
+			    camera.lookAt(scene.position);
+		    });
+        }
+
     });
 
 </script>
