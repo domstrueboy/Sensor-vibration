@@ -4,15 +4,16 @@
 
 <head>
     <title>Sensor Vibration</title>
+    <meta charset="utf-8">
     <!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
-    <script type="text/javascript" src="vendors/three.js"></script>
-    <script type="text/javascript" src="vendors/jquery-1.9.0.js"></script>
+	<link rel="stylesheet" href="vendors/bootstrap.min.css"/>
+   
+    <script type="text/javascript" src="vendors/three.min.js"></script>
+    <script type="text/javascript" src="vendors/jquery-2.2.2.min.js"></script>
+    <script type="text/javascript" src="vendors/bootstrap.min.js"></script>
     <script type="text/javascript" src="vendors/stats.js"></script>
-    <script type="text/javascript" src="vendors/dat.gui.js"></script>
+    <!--<script type="text/javascript" src="vendors/dat.gui.js"></script>-->
 
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <style>
         body{
             /* set margin to 0 and overflow to hidden, to go fullscreen */
@@ -20,31 +21,95 @@
             overflow: hidden;
 
             width: 100%;
-		    height: 100%;
-		    position: fixed;
-		    top: 0;
-		    left: 0;
-		    display: flex;
-		    align-items: center;
-		    justify-content: center; 
-		    overflow: auto; 
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            overflow: auto; 
         }
         #WebGL-output{
-        	/*border: 1px solid black;*/
+            /*border: 1px solid black;*/
         }
         #input-frame{
-        	width: 200px;
-        	height: 585px;
+            width: 350px;
+            height: 585px;
         }
     </style>
 </head>
 <body>
 <div id="input-frame" class="well">
-	<input type="text">
-	<button class="lookAtPerspective">Perspective</button>
-	<button class="lookAtFront">Front View</button>
-	<button class="lookAtRight">Right View</button>
-	<button class="lookAtTop">Top View</button>
+
+        
+    <div class="input-group">
+        <button class="lookAtPerspective">Perspective</button>
+        <button class="lookAtFront">Front</button>
+        <button class="lookAtRight">Right</button>
+        <button class="lookAtTop">Top</button>  
+    </div><br>
+
+    <div class="form-group">
+        <label for="exampleInputAmount">Датчик</label>
+
+        <div class="input-group">
+
+            <div class="input-group-addon"><strong>№1</strong></div>
+
+            <div class="input-group">
+              <div class="input-group-addon"><strong>A</strong><i>x1:</i> </div>
+              <input type="text" class="form-control" id="Ax1" value="2.72">
+              <div class="input-group-addon"><strong>φ</strong><i>x1:</i> </div>
+              <input type="text" class="form-control" id="fiX1" value="-138.6">
+            </div>
+
+            <div class="input-group">
+              <div class="input-group-addon"><strong>A</strong><i>y1:</i> </div>
+              <input type="text" class="form-control" id="Ay1" value="3.15">
+              <div class="input-group-addon"><strong>φ</strong><i>y1:</i> </div>
+              <input type="text" class="form-control" id="fiY1" value="15.4">
+            </div>
+
+            <div class="input-group">
+              <div class="input-group-addon"><strong>A</strong><i>z1:</i> </div>
+              <input type="text" class="form-control" id="Az1" value="14.78">
+              <div class="input-group-addon"><strong>φ</strong><i>z1:</i> </div>
+              <input type="text" class="form-control" id="fiZ1" value="44.1">
+            </div>           
+        </div><br>
+
+        <div class="input-group">
+
+            <div class="input-group-addon"><strong>№2</strong></div>
+
+            <div class="input-group">
+              <div class="input-group-addon"><strong>A</strong><i>x2:</i> </div>
+              <input type="text" class="form-control" id="Ax2" value="15.52">
+              <div class="input-group-addon"><strong>φ</strong><i>x2:</i> </div>
+              <input type="text" class="form-control" id="fiX2" value="12.8">
+            </div>
+
+            <div class="input-group">
+              <div class="input-group-addon"><strong>A</strong><i>y2:</i> </div>
+              <input type="text" class="form-control" id="Ay2" value="4.86">
+              <div class="input-group-addon"><strong>φ</strong><i>y2:</i> </div>
+              <input type="text" class="form-control" id="fiY2" value="-165.3">
+            </div>
+
+            <div class="input-group">
+              <div class="input-group-addon"><strong>A</strong><i>z2:</i> </div>
+              <input type="text" class="form-control" id="Az2" value="146.02">
+              <div class="input-group-addon"><strong>φ</strong><i>z2:</i> </div>
+              <input type="text" class="form-control" id="fiZ2" value="5.4">
+            </div>   
+
+        </div><br>
+
+        <button class="applyData"><strong>Apply</strong></button>
+
+    </div>
+
 </div>
 
 <div id="Stats-output">
@@ -56,217 +121,229 @@
 <!-- Javascript code that runs our Three.js examples -->
 <script type="text/javascript">
 
-    // once everything is loaded, we run our Three.js stuff.
-    $(function () {
+var app = {
 
-    	//Initializing required vars:
-    	var len = 150, // Length of beem with accelerometer
-			scale = 20,
+    init: function(){
 
-			step = 0, //time step
-        	time = 0, //Initial time
+        $(document).ready(function(){
+            app.dashboard();
+            app.display3d(); 
+        });
+    },
 
-        	cubeXDim = 10,
-        	cubeYDim = 7,
-        	cubeZDim = 3;
+    dashboard: function(){
 
-        var Ax1 = 2.72; var fiX1 = -138.6;
-        var Ay1 = 3.15; var fiY1 = 15.4;
-        var Az1 = 14.78; var fiZ1 = 44.1;
+        dataParse();
+        console.log(app.data);
 
-        var Ax2 = 15.52; var fiX2 = 12.8;
-        var Ay2 = 4.86; var fiY2 = -165.3;
-        var Az2 = 146.02; var fiZ2 = 5.4;
+        $('.applyData').click(function(){
+            dataParse();
+        });
 
-        /*var Ax1 = 2.29; var fiX1 = -97.5;
-        var Ay1 = 19.61; var fiY1 = 8.0;
-        var Az1 = 100.19; var fiZ1 = -0.4;
+        function dataParse(){
 
-        var Ax2 = 10.31; var fiX2 = 8.0;
-        var Ay2 = 15.55; var fiY2 = -178.9;
-        var Az2 = 42.45; var fiZ2 = 7.6;*/
+            app.data = {
+                Ax1: parseFloat($("#Ax1").val()), fiX1: parseFloat($("#fiX1").val()),
+                Ay1: parseFloat($("#Ay1").val()), fiY1: parseFloat($("#fiY1").val()),
+                Az1: parseFloat($("#Az1").val()), fiZ1: parseFloat($("#fiZ1").val()),
 
-        var x1, y1, z1, x2, y2, z2;
-        var xPos, yPos, zPos, xRot, yRot, zRot;
-        
-        var omega = 100;
-
-        var stats = initStats();
-
-        // create a scene, that will hold all our elements such as objects, cameras and lights.
-        var scene = new THREE.Scene();
-
-        // create a camera, which defines where we're looking at.
-        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-        // create a render and set the size
-        var renderer = new THREE.WebGLRenderer();
-
-        renderer.setClearColor(0xEEEEEE, 1.0);
-        renderer.setSize(60*16, 60*9);
-        //renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMapEnabled = true;
-
-        // create the ground plane
-        var planeGeometry = new THREE.PlaneGeometry(60,20,1,1);
-        var planeMaterial =    new THREE.MeshLambertMaterial({color: 0xffffff});
-        var plane = new THREE.Mesh(planeGeometry,planeMaterial);
-        plane.receiveShadow  = true;
-
-        // rotate and position the plane
-        plane.rotation.x=-0.5*Math.PI;
-        plane.position.x = 15;
-        plane.position.y = -10;
-        plane.position.z = 0;
-
-        // add the plane to the scene
-        scene.add(plane);
-
-        // create a cube
-        var cubeGeometry = new THREE.CubeGeometry(cubeXDim,cubeYDim,cubeZDim);
-        var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red'});
-        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        cube.castShadow = true;
-
-        // position the cube
-        cube.position.x = 0;
-        cube.position.y = 0;
-        cube.position.z = 0;
-
-        // add the cube to the scene
-        scene.add(cube);
-
-        var lineMaterial = new THREE.LineBasicMaterial({
-			color: 0x0000ff
-		});
-
-		var lineGeometry = new THREE.Geometry();
-
-		lineGeometry.vertices.push(
-			//                 x  y   z 
-			new THREE.Vector3( 0, 0, len/scale ),
-			new THREE.Vector3( 0, 0, 0 ),
-			new THREE.Vector3( 0, 0, -len/scale )
-		);
-
-		var line = new THREE.Line( lineGeometry, lineMaterial );
-
-		scene.add(line);
-
-        // position and point the camera to the center of the scene
-        camera.position.x = -30;
-        camera.position.y = 30;
-        camera.position.z = 30;
-        camera.lookAt(scene.position);
-
-        // add subtle ambient lighting
-        var ambientLight = new THREE.AmbientLight(0x0c0c0c);
-        scene.add(ambientLight);
-
-        // add spotlight for the shadows
-        var spotLight = new THREE.SpotLight( 0xffffff );
-        spotLight.position.set( -40, 60, -10 );
-        spotLight.castShadow = true;
-        scene.add( spotLight );
-
-        // add the output of the renderer to the html element
-        $("#WebGL-output").append(renderer.domElement);
-
-        // call the render function
-
-        var controls = new function() {
-            this.rotationSpeed = 0.02;
-            this.bouncingSpeed = 0.03;
+                Ax2: parseFloat($("#Ax2").val()), fiX2: parseFloat($("#fiX2").val()),
+                Ay2: parseFloat($("#Ay2").val()), fiY2: parseFloat($("#fiY2").val()),
+                Az2: parseFloat($("#Az2").val()), fiZ2: parseFloat($("#fiZ2").val())
+            };
         }
 
-        var gui = new dat.GUI();
-        gui.add(controls, 'rotationSpeed',0,0.5);
-        gui.add(controls, 'bouncingSpeed',0,0.5);
+        /*$('#solution1-idA, #solution1-idB, #solution1-idC').keyup(function(){
+            $("#solution1-result").text(
+                solution1(
+                    $("#solution1-idA").val(),
+                    $("#solution1-idB").val(),
+                    $("#solution1-idC").val()
+                )
+            );
+        });*/
 
-        render();
+    },
 
-        function render() {
-            stats.update();
+    display3d: function () {
 
-            x1 = equation(Ax1, fiX1);
-            y1 = equation(Ay1, fiY1);
-            z1 = equation(Az1, fiZ1);
+                //Initializing required vars:
+                var len = 150, // Length of beem with accelerometer
+                    scale = 20,
 
-            x2 = equation(Ax2, fiX2);
-            y2 = equation(Ay2, fiY2);
-            z2 = equation(Az2, fiZ2);
+                    step = 0, //time step
+                    time = 0, //Initial time
 
-            xPos = (x1-x2)/2;
-            yPos = (y1-y2)/2;
-            zPos = (z1+z2)/2;
+                    cubeXDim = 10,
+                    cubeYDim = 7,
+                    cubeZDim = 3;
+         
+                var x1, y1, z1, x2, y2, z2;
+                var xPos, yPos, zPos, xRot, yRot, zRot;
+                
+                var omega = 100;
 
-            xRot = Math.acos((z1-zPos)/len);
-            yRot = Math.acos((y1-yPos)/len);
+                var stats = initStats();
 
-            // rotate the cube around its axes
-            cube.position.x = xPos / scale;
-            cube.position.y = zPos / scale - cubeYDim/2*Math.cos(xRot - Math.PI/2);
-            cube.position.z = yPos / scale - cubeYDim/2*Math.sin(xRot - Math.PI/2);
+                // create a scene, that will hold all our elements such as objects, cameras and lights.
+                var scene = new THREE.Scene();
 
-            // rotate the cube around its axes
-            cube.rotation.x = xRot + Math.PI/2;
-            cube.rotation.y = yRot + Math.PI/2;
-            /*cube.rotation.z =;*/
+                // create a camera, which defines where we're looking at.
+                var camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-            //                                              x            y       z
-            line.geometry.vertices[0] = new THREE.Vector3(x1/scale, z1/scale, (-y1+len)/scale);
-            line.geometry.vertices[1] = new THREE.Vector3(xPos/scale, zPos/scale, yPos/scale);
-            line.geometry.vertices[2] = new THREE.Vector3(-x2/scale, z2/scale, (y2-len)/scale);
-            line.geometry.verticesNeedUpdate = true;
-            line.geometry.computeFaceNormals();
+                // create a render and set the size
+                var renderer = new THREE.WebGLRenderer();
 
-            /*cube.rotation.x += controls.rotationSpeed;
-            cube.rotation.y += controls.rotationSpeed;
-            cube.rotation.z += controls.rotationSpeed;*/
+                renderer.setClearColor(0xEEEEEE, 1.0);
+                renderer.setSize(60*16, 60*9);
+                //renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMapEnabled = true;
 
-            // render using requestAnimationFrame
-            requestAnimationFrame(render);
-            renderer.render(scene, camera);
+                // create the ground plane
+                var planeGeometry = new THREE.PlaneGeometry(60,20,1,1);
+                var planeMaterial =    new THREE.MeshLambertMaterial({color: 0xffffff});
+                var plane = new THREE.Mesh(planeGeometry,planeMaterial);
+                plane.receiveShadow  = true;
 
-            time += 0.001;
+                // rotate and position the plane
+                plane.rotation.x=-0.5*Math.PI;
+                plane.position.x = 15;
+                plane.position.y = -15;
+                plane.position.z = 0;
 
-            function equation(A, fi){
-            	return A * Math.sin(omega*time + fi*Math.PI/180);
-            }
-        }
+                // add the plane to the scene
+                scene.add(plane);
 
-        function initStats() {
+                // create a cube
+                var cubeGeometry = new THREE.CubeGeometry(cubeXDim,cubeYDim,cubeZDim);
+                var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red'});
+                var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                cube.castShadow = true;
 
-            var stats = new Stats();
+                // add the cube to the scene
+                scene.add(cube);
 
-            stats.setMode(0); // 0: fps, 1: ms
+                var lineMaterial = new THREE.LineBasicMaterial({
+                    color: 0x0000ff
+                });
 
-            // Align top-left
-            stats.domElement.style.position = 'absolute';
-            stats.domElement.style.left = '0px';
-            stats.domElement.style.top = '0px';
+                var lineGeometry = new THREE.Geometry();
 
-            $("#Stats-output").append( stats.domElement );
+                lineGeometry.vertices.push(
+                    //                 x  y   z 
+                    new THREE.Vector3( 0, 0, len/scale ),
+                    new THREE.Vector3( 0, 0, 0 ),
+                    new THREE.Vector3( 0, 0, -len/scale )
+                );
 
-            return stats;
-        }
+                var line = new THREE.Line( lineGeometry, lineMaterial );
 
-        lookAt(".lookAtPerspective", -30, 30, 30);
-        lookAt(".lookAtFront", 0, 0, 30);
-        lookAt(".lookAtRight", 30, 0, 0);
-        lookAt(".lookAtTop", 0, 30, 0);
+                scene.add(line);
 
-        function lookAt(button, x, y, z) {
+                // position and point the camera to the center of the scene
+                camera.position.x = -30;
+                camera.position.y = 30;
+                camera.position.z = 30;
+                camera.lookAt(scene.position);
 
-		    $(button).click(function(){
-		        camera.position.x = x;
-			    camera.position.y = y;
-			    camera.position.z = z;
-			    camera.lookAt(scene.position);
-		    });
-        }
+                // add subtle ambient lighting
+                var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+                scene.add(ambientLight);
 
-    });
+                // add spotlight for the shadows
+                var spotLight = new THREE.SpotLight( 0xffffff );
+                spotLight.position.set( -40, 60, -10 );
+                spotLight.castShadow = true;
+                scene.add( spotLight );
+
+                // add the output of the renderer to the html element
+                $("#WebGL-output").append(renderer.domElement);
+
+                // call the render function
+
+                render();
+
+                function render() {
+                    stats.update();
+
+                    x1 = equation(app.data.Ax1, app.data.fiX1);
+                    y1 = equation(app.data.Ay1, app.data.fiY1);
+                    z1 = equation(app.data.Az1, app.data.fiZ1);
+
+                    x2 = equation(app.data.Ax2, app.data.fiX2);
+                    y2 = equation(app.data.Ay2, app.data.fiY2);
+                    z2 = equation(app.data.Az2, app.data.fiZ2);
+
+                    xPos = (x1-x2)/2;
+                    yPos = (y1-y2)/2;
+                    zPos = (z1+z2)/2;
+
+                    xRot = Math.acos((z1-zPos)/len);
+                    yRot = Math.acos((y1-yPos)/len);
+
+                    // rotate the cube around its axes
+                    cube.position.x = xPos / scale;
+                    cube.position.y = zPos / scale - cubeYDim/2*Math.cos(xRot - Math.PI/2);
+                    cube.position.z = yPos / scale - cubeYDim/2*Math.sin(xRot - Math.PI/2);
+
+                    // rotate the cube around its axes
+                    cube.rotation.x = xRot + Math.PI/2;
+                    cube.rotation.y = yRot + Math.PI/2;
+                    /*cube.rotation.z =;*/
+
+                    //                                              x            y       z
+                    line.geometry.vertices[0] = new THREE.Vector3(x1/scale, z1/scale, (-y1+len)/scale);
+                    line.geometry.vertices[1] = new THREE.Vector3(xPos/scale, zPos/scale, yPos/scale);
+                    line.geometry.vertices[2] = new THREE.Vector3(-x2/scale, z2/scale, (y2-len)/scale);
+                    line.geometry.verticesNeedUpdate = true;
+                    line.geometry.computeFaceNormals();
+
+                    // render using requestAnimationFrame
+                    requestAnimationFrame(render);
+                    renderer.render(scene, camera);
+
+                    time += 0.001;
+
+                    function equation(A, fi){
+                        return A * Math.sin(omega*time + fi*Math.PI/180);
+                    }
+                }
+
+                function initStats() {
+
+                    var stats = new Stats();
+
+                    stats.setMode(0); // 0: fps, 1: ms
+
+                    // Align top-left
+                    stats.domElement.style.position = 'absolute';
+                    stats.domElement.style.left = '10px';
+                    stats.domElement.style.top = '10px';
+
+                    $("#Stats-output").append( stats.domElement );
+
+                    return stats;
+                }
+
+                lookAt(".lookAtPerspective", -30, 30, 30);
+                lookAt(".lookAtFront", 0, 0, 30);
+                lookAt(".lookAtRight", 30, 0, 0);
+                lookAt(".lookAtTop", 0, 30, 0);
+
+                function lookAt(button, x, y, z) {
+
+                    $(button).click(function(){
+                        camera.position.x = x;
+                        camera.position.y = y;
+                        camera.position.z = z;
+                        camera.lookAt(scene.position);
+                    });
+                }
+
+    }
+}
+    
+app.init();
 
 </script>
 </body>
