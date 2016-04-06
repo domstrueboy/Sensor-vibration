@@ -9,10 +9,13 @@
 	<link rel="stylesheet" href="vendors/bootstrap.min.css"/>
    
     <script type="text/javascript" src="vendors/three.min.js"></script>
+    <script type="text/javascript" src="vendors/CanvasRenderer.js"></script>
+    <script type="text/javascript" src="vendors/Projector.js"></script>
     <script type="text/javascript" src="vendors/jquery-2.2.2.min.js"></script>
     <script type="text/javascript" src="vendors/bootstrap.min.js"></script>
+    <script type="text/javascript" src="vendors/numbers.min.js"></script>
     <script type="text/javascript" src="vendors/stats.js"></script>
-    <!--<script type="text/javascript" src="vendors/dat.gui.js"></script>-->
+
 
     <style>
         body{
@@ -33,22 +36,30 @@
         #WebGL-output{
             /*border: 1px solid black;*/
         }
+        #SVG-output{
+        	width: 1000px;
+        	height: 585px;
+        }
         #input-frame{
             width: 350px;
             height: 585px;
+        }
+        .plot{
+        	background: white;
+        	 width: 330px;
+        	 height: 260px; 
+        }
+        .hidden{
+        	display: none;
         }
     </style>
 </head>
 <body>
 <div id="input-frame" class="well">
 
-        
-    <div class="input-group">
-        <button class="lookAtPerspective">Perspective</button>
-        <button class="lookAtFront">Front</button>
-        <button class="lookAtRight">Right</button>
-        <button class="lookAtTop">Top</button>  
-    </div><br>
+	<div class="tabs-buttons input-group">
+    	<button class='tabs-button tabs-button-projections btn btn-info'>To Projections View</button>
+    </div><hr>
 
     <div class="form-group">
         <label for="exampleInputAmount">Датчик</label>
@@ -59,23 +70,23 @@
 
             <div class="input-group">
               <div class="input-group-addon"><strong>A</strong><i>x1:</i> </div>
-              <input type="text" class="form-control" id="Ax1" value="2.72">
+              <input type="text" class="dashboard-input form-control" id="Ax1" value="2.72">
               <div class="input-group-addon"><strong>φ</strong><i>x1:</i> </div>
-              <input type="text" class="form-control" id="fiX1" value="-138.6">
+              <input type="text" class="dashboard-input form-control" id="fiX1" value="-138.6">
             </div>
 
             <div class="input-group">
               <div class="input-group-addon"><strong>A</strong><i>y1:</i> </div>
-              <input type="text" class="form-control" id="Ay1" value="3.15">
+              <input type="text" class="dashboard-input form-control" id="Ay1" value="3.15">
               <div class="input-group-addon"><strong>φ</strong><i>y1:</i> </div>
-              <input type="text" class="form-control" id="fiY1" value="15.4">
+              <input type="text" class="dashboard-input form-control" id="fiY1" value="15.4">
             </div>
 
             <div class="input-group">
               <div class="input-group-addon"><strong>A</strong><i>z1:</i> </div>
-              <input type="text" class="form-control" id="Az1" value="14.78">
+              <input type="text" class="dashboard-input form-control" id="Az1" value="14.78">
               <div class="input-group-addon"><strong>φ</strong><i>z1:</i> </div>
-              <input type="text" class="form-control" id="fiZ1" value="44.1">
+              <input type="text" class="dashboard-input form-control" id="fiZ1" value="44.1">
             </div>           
         </div><br>
 
@@ -85,30 +96,39 @@
 
             <div class="input-group">
               <div class="input-group-addon"><strong>A</strong><i>x2:</i> </div>
-              <input type="text" class="form-control" id="Ax2" value="15.52">
+              <input type="text" class="dashboard-input form-control" id="Ax2" value="15.52">
               <div class="input-group-addon"><strong>φ</strong><i>x2:</i> </div>
-              <input type="text" class="form-control" id="fiX2" value="12.8">
+              <input type="text" class="dashboard-input form-control" id="fiX2" value="12.8">
             </div>
 
             <div class="input-group">
               <div class="input-group-addon"><strong>A</strong><i>y2:</i> </div>
-              <input type="text" class="form-control" id="Ay2" value="4.86">
+              <input type="text" class="dashboard-input form-control" id="Ay2" value="4.86">
               <div class="input-group-addon"><strong>φ</strong><i>y2:</i> </div>
-              <input type="text" class="form-control" id="fiY2" value="-165.3">
+              <input type="text" class="dashboard-input form-control" id="fiY2" value="-165.3">
             </div>
 
             <div class="input-group">
               <div class="input-group-addon"><strong>A</strong><i>z2:</i> </div>
-              <input type="text" class="form-control" id="Az2" value="146.02">
+              <input type="text" class="dashboard-input form-control" id="Az2" value="146.02">
               <div class="input-group-addon"><strong>φ</strong><i>z2:</i> </div>
-              <input type="text" class="form-control" id="fiZ2" value="5.4">
+              <input type="text" class="dashboard-input form-control" id="fiZ2" value="5.4">
             </div>   
 
         </div><br>
 
-        <button class="applyData"><strong>Apply</strong></button>
+        <button class="btn btn-success applyData"><strong>Applied. Don`t worry</strong></button>
 
-    </div>
+    </div><hr>
+
+    <div class="views-buttons input-group">
+    	<p><strong>Views:</strong></p>
+        <button class="btn-lookAt lookAtPerspective btn btn-primary">Perspective</button>
+        <button class="btn-lookAt lookAtFront btn btn-default">Front</button>
+        <button class="btn-lookAt lookAtRight btn btn-default">Right</button>
+        <button class="btn-lookAt lookAtTop btn btn-default">Top</button>
+          
+    </div><hr>
 
 </div>
 
@@ -116,6 +136,16 @@
 </div>
 <!-- Div which will hold the Output -->
 <div id="WebGL-output" class="well">
+</div>
+<div id="SVG-output" class="well hidden">
+	<strong>View XY:</strong>
+	<svg id="plot1" class="plot"></svg>
+
+	<strong>View XY:</strong>
+	<svg id="plot2" class="plot"></svg><br><br>
+
+	<strong>View XY:</strong>
+	<svg id="plot3" class="plot"></svg>
 </div>
 
 <!-- Javascript code that runs our Three.js examples -->
@@ -127,14 +157,14 @@ var app = {
 
         $(document).ready(function(){
             app.dashboard();
-            app.display3d(); 
+            app.display3d();
+            app.projection(); 
         });
     },
 
     dashboard: function(){
 
         dataParse();
-        console.log(app.data);
 
         $('.applyData').click(function(){
             dataParse();
@@ -151,17 +181,30 @@ var app = {
                 Ay2: parseFloat($("#Ay2").val()), fiY2: parseFloat($("#fiY2").val()),
                 Az2: parseFloat($("#Az2").val()), fiZ2: parseFloat($("#fiZ2").val())
             };
-        }
+        };
 
-        /*$('#solution1-idA, #solution1-idB, #solution1-idC').keyup(function(){
-            $("#solution1-result").text(
-                solution1(
-                    $("#solution1-idA").val(),
-                    $("#solution1-idB").val(),
-                    $("#solution1-idC").val()
-                )
-            );
-        });*/
+        $('.btn-lookAt').click(function(){
+        	$('.btn-lookAt').removeClass('btn-primary').addClass('btn-default');
+        	$(this).removeClass('btn-default').addClass('btn-primary');
+        });
+
+		$( ".dashboard-input" ).keyup(function(){
+			$('.applyData').removeClass('btn-success').addClass('btn-warning').text('Changed. Please apply');
+		});
+
+		$('.applyData').click(function(){
+			$(this).removeClass('btn-warning').addClass('btn-success').text('Applied. Don`t worry');
+		});
+
+		$('.tabs-button-projections').click(function(){
+			$(this).removeClass('tabs-button-projections').addClass('tabs-button-3Dview').text('To 3D View');
+		});
+		$('.tabs-button-3Dview').click(function(){
+			$(this).removeClass('tabs-button-3Dview').addClass('tabs-button-projections').text('To Projections View');
+		});
+		$('.tabs-button').click(function(){
+			$('.views-buttons, #WebGL-output, #SVG-output').toggleClass('hidden');
+		});
 
     },
 
@@ -169,9 +212,9 @@ var app = {
 
                 //Initializing required vars:
                 var len = 150, // Length of beem with accelerometer
-                    scale = 20,
+                    scale = 0.05,
 
-                    step = 0, //time step
+                    step = 0.001, //time step
                     time = 0, //Initial time
 
                     cubeXDim = 10,
@@ -192,31 +235,52 @@ var app = {
                 var camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
 
                 // create a render and set the size
-                var renderer = new THREE.WebGLRenderer();
+                //var renderer = new THREE.WebGLRenderer( {antialias:true} );
+                //var renderer = new THREE.CanvasRenderer();
+
+                function webglAvailable() {
+                    try {
+                        var canvas = document.createElement( 'canvas' );
+                        return !!( window.WebGLRenderingContext && (
+                            canvas.getContext( 'webgl' ) ||
+                            canvas.getContext( 'experimental-webgl' ) )
+                        );
+                    } catch ( e ) {
+                        return false;
+                    }
+                }
+
+                if ( webglAvailable() ) {
+                    var renderer = new THREE.WebGLRenderer( {antialias:true} );
+                } else {
+                    var renderer = new THREE.CanvasRenderer();
+                }
 
                 renderer.setClearColor(0xEEEEEE, 1.0);
                 renderer.setSize(60*16, 60*9);
                 //renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.shadowMapEnabled = true;
+                renderer.shadowMapEnabled = false;
 
                 // create the ground plane
-                var planeGeometry = new THREE.PlaneGeometry(60,20,1,1);
-                var planeMaterial =    new THREE.MeshLambertMaterial({color: 0xffffff});
-                var plane = new THREE.Mesh(planeGeometry,planeMaterial);
-                plane.receiveShadow  = true;
+                //var planeGeometry = new THREE.PlaneGeometry(60,20,1,1);
+                //var planeMaterial =    new THREE.MeshLambertMaterial({color: 0xffffff});
+                //var plane = new THREE.Mesh(planeGeometry,planeMaterial);
+                //plane.receiveShadow  = true;
 
                 // rotate and position the plane
-                plane.rotation.x=-0.5*Math.PI;
-                plane.position.x = 15;
-                plane.position.y = -15;
-                plane.position.z = 0;
+                //plane.rotation.x=-0.5*Math.PI;
+                //plane.position.x = 15;
+                //plane.position.y = -15;
+                //plane.position.z = 0;
 
                 // add the plane to the scene
-                scene.add(plane);
+                //scene.add(plane);
 
                 // create a cube
                 var cubeGeometry = new THREE.CubeGeometry(cubeXDim,cubeYDim,cubeZDim);
-                var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red'});
+                var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red'/*, wireframe: true, 
+			wireframeLinewidth: 2 */});
+
                 var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
                 cube.castShadow = true;
 
@@ -261,51 +325,145 @@ var app = {
 
                 // call the render function
 
-                render();
+                if(!$('#WebGL-output').hasClass('hidden')){
+                	render();
+    			};
 
                 function render() {
                     stats.update();
 
+                    // В системе координат three.js
                     x1 = equation(app.data.Ax1, app.data.fiX1);
-                    y1 = equation(app.data.Ay1, app.data.fiY1);
-                    z1 = equation(app.data.Az1, app.data.fiZ1);
+                    z1 = - equation(app.data.Ay1, app.data.fiY1);
+                    y1 = equation(app.data.Az1, app.data.fiZ1);
 
-                    x2 = equation(app.data.Ax2, app.data.fiX2);
-                    y2 = equation(app.data.Ay2, app.data.fiY2);
-                    z2 = equation(app.data.Az2, app.data.fiZ2);
+                    // В системе координат three.js
+                    x2 = - equation(app.data.Ax2, app.data.fiX2);
+                    z2 = equation(app.data.Ay2, app.data.fiY2);
+                    y2 = equation(app.data.Az2, app.data.fiZ2);
 
-                    xPos = (x1-x2)/2;
-                    yPos = (y1-y2)/2;
+                    // Нахождение средней точки в системе координат three.js
+                    xPos = (x1+x2)/2;
+                    yPos = (y1+y2)/2;
                     zPos = (z1+z2)/2;
 
-                    xRot = Math.acos((z1-zPos)/len);
-                    yRot = Math.acos((y1-yPos)/len);
+                    // Углы поворотов
+                    xRot = -(y1-y2)/(2*len); // вокруг оси x
+                    yRot = -(z1-z2)/(2*len); // --||--
+                    zRot = -(x1-x2)/(2*len);
+                    
+                    var sensorOneCoordinates = [[x1, y1, z1, 1]];
+                    var sensorTwoCoordinates = [[x2, y2, z2, 1]];
 
-                    // rotate the cube around its axes
-                    cube.position.x = xPos / scale;
-                    cube.position.y = zPos / scale - cubeYDim/2*Math.cos(xRot - Math.PI/2);
-                    cube.position.z = yPos / scale - cubeYDim/2*Math.sin(xRot - Math.PI/2);
+                    /////////////////////////////////////////////////////////////////////////////////////////
 
-                    // rotate the cube around its axes
-                    cube.rotation.x = xRot + Math.PI/2;
-                    cube.rotation.y = yRot + Math.PI/2;
-                    /*cube.rotation.z =;*/
+                    var parallelTranslation1 = [
+                    					[1, 0, 0, 0],
+                    				 	[0, 1, 0, 0],
+                    				 	[0, 0, 1, 0],
+                    				 	[0, 0, len, 1]
+                    				 ];
+                    var parallelTranslation2 = [
+                    					[1, 0, 0, 0],
+                    				 	[0, 1, 0, 0],
+                    				 	[0, 0, 1, 0],
+                    				 	[0, 0, -len, 1]
+                    				 ];
 
-                    //                                              x            y       z
-                    line.geometry.vertices[0] = new THREE.Vector3(x1/scale, z1/scale, (-y1+len)/scale);
-                    line.geometry.vertices[1] = new THREE.Vector3(xPos/scale, zPos/scale, yPos/scale);
-                    line.geometry.vertices[2] = new THREE.Vector3(-x2/scale, z2/scale, (y2-len)/scale);
+                    sensorOneCoordinates = numbers.matrix.multiply(sensorOneCoordinates, parallelTranslation1); //Параллельный перенос датчика 1 на len
+                    sensorTwoCoordinates = numbers.matrix.multiply(sensorTwoCoordinates, parallelTranslation2);
+
+                    /////////////////////////////////////////////////////////////////////////////////////////////
+
+                    var rotationX1 = [
+                    					[1, 	0, 					0, 					0],
+                    				 	[0, 	Math.cos(xRot), 	Math.sin(xRot), 	0],
+                    				 	[0, 	-Math.sin(xRot), 	Math.cos(xRot), 	0],
+                    				 	[0, 	0, 					0, 					1]
+                    				 ];
+
+                    var rotationX2 = [
+                    					[1, 	0, 					0, 					0],
+                    				 	[0, 	Math.cos(xRot), 	Math.sin(xRot), 	0],
+                    				 	[0, 	-Math.sin(xRot), 	Math.cos(xRot), 	0],
+                    				 	[0, 	0, 					0, 					1]
+                    				 ];
+
+                    sensorOneCoordinates = numbers.matrix.multiply(sensorOneCoordinates, rotationX1);
+                    sensorTwoCoordinates = numbers.matrix.multiply(sensorTwoCoordinates, rotationX2);
+
+                    ////////////////////////////////////////////////////////////////////////////////////////////
+
+                    var rotationY1 = [
+                    					[Math.cos(yRot), 	0, 		-Math.sin(yRot), 	0],
+                    				 	[0, 				1, 		0, 					0],
+                    				 	[Math.sin(yRot), 	0, 		Math.cos(yRot), 	0],
+                    				 	[0, 				0, 		0, 					1]
+                    				 ];
+
+                     var rotationY2 = [
+                    					[Math.cos(yRot), 	0, 		-Math.sin(yRot), 	0],
+                    				 	[0, 				1, 		0, 					0],
+                    				 	[Math.sin(yRot), 	0, 		Math.cos(yRot), 	0],
+                    				 	[0, 				0, 		0, 					1]
+                    				 ];
+
+                    sensorOneCoordinates = numbers.matrix.multiply(sensorOneCoordinates, rotationY1);
+                    sensorTwoCoordinates = numbers.matrix.multiply(sensorTwoCoordinates, rotationY2);
+
+                    ////////////////////////////////////////////////////////////////////////////////////////////
+
+                    var rotationZ1 = [
+                    					[Math.cos(zRot), 	Math.sin(zRot), 	0, 		0],
+                    				 	[-Math.sin(zRot), 	Math.cos(zRot), 	0, 		0],
+                    				 	[0, 				0, 					1, 		0],
+                    				 	[0, 				0, 					0, 		1]
+                    				 ];
+
+                     var rotationZ2 = [
+                    					[Math.cos(zRot), 	Math.sin(zRot), 	0, 		0],
+                    				 	[-Math.sin(zRot), 	Math.cos(zRot), 	0, 		0],
+                    				 	[0, 				0, 					1, 		0],
+                    				 	[0, 				0, 					0, 		1]
+                    				 ];
+
+                    sensorOneCoordinates = numbers.matrix.multiply(sensorOneCoordinates, rotationZ1);
+                    sensorTwoCoordinates = numbers.matrix.multiply(sensorTwoCoordinates, rotationZ2);
+
+                    /*xPos = (sensorOneCoordinates[0][0]+sensorTwoCoordinates[0][0])/2;
+                    yPos = (sensorOneCoordinates[0][1]+sensorTwoCoordinates[0][1])/2;
+                    zPos = (sensorOneCoordinates[0][2]+sensorTwoCoordinates[0][2])/2;*/
+
+                    // Рисование двух линий с координатами (x1, y1, z1, xPos, yPos, zPos) и (xPos, yPos, zPos, x2, y2, z2)
+                    //                                                x            y       z
+                    line.geometry.vertices[0] = new THREE.Vector3(sensorOneCoordinates[0][0]*scale, sensorOneCoordinates[0][1]*scale, sensorOneCoordinates[0][2]*scale);
+                    line.geometry.vertices[1] = new THREE.Vector3(xPos*scale, yPos*scale, zPos*scale);
+                    line.geometry.vertices[2] = new THREE.Vector3(sensorTwoCoordinates[0][0]*scale, sensorTwoCoordinates[0][1]*scale, sensorTwoCoordinates[0][2]*scale);
+
                     line.geometry.verticesNeedUpdate = true;
                     line.geometry.computeFaceNormals();
+
+                    // rotate the cube around its axes
+                    cube.position.x = xPos*scale;
+                    cube.position.y = yPos*scale;
+                    cube.position.z = zPos*scale;
+
+                    cube.translateY(-cubeYDim/2);
+
+                    // rotate the cube around its axes
+                    cube.rotation.x = xRot*2;
+                    cube.rotation.y = yRot*0.8;
+                    cube.rotation.z = zRot;
 
                     // render using requestAnimationFrame
                     requestAnimationFrame(render);
                     renderer.render(scene, camera);
 
-                    time += 0.001;
+                    time += step;
 
-                    function equation(A, fi){
-                        return A * Math.sin(omega*time + fi*Math.PI/180);
+                    function equation(A, fi, t){
+                    	ti = t || time;
+                        return A * Math.sin(omega*ti + fi*Math.PI/180);
                     }
                 }
 
@@ -339,6 +497,21 @@ var app = {
                         camera.lookAt(scene.position);
                     });
                 }
+
+    },
+
+    projection: function(){
+
+    	var canva = document.getElementById("plot1");
+
+     	var line  = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", "5");
+          line.setAttribute("y1", "5");
+          line.setAttribute("x2", "200");
+          line.setAttribute("y2", "150");
+          line.setAttribute("stroke-width", "2px");
+          line.setAttribute("stroke", "red");
+          canva.appendChild(line);
 
     }
 }
